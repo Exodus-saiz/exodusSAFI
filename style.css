@@ -1,57 +1,117 @@
-body {
-    font-family: Arial, sans-serif;
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    background: #f4f4f4;
 }
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+}
+
 header {
-    background: #222;
-    color: white;
-    padding: 10px;
+    color: #fff;
+    padding: 14px;
     text-align: center;
+    font-weight: bold;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(6px);
 }
+
 main {
-    padding: 20px;
+    padding: 15px;
 }
+
+section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
 h2 {
-    color: #444;
+    font-size: 17px;
+    margin-bottom: 12px;
+    color: #0f2027;
+    border-left: 5px solid #2c5364;
+    padding-left: 10px;
 }
+
 .form-group {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
-input, select, button {
-    padding: 8px;
-    margin-top: 5px;
+
+label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    display: block;
+    margin-bottom: 4px;
+}
+
+input, select {
     width: 100%;
+    padding: 11px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
 }
+
 button {
-    background-color: #007bff;
-    color: white;
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
     border: none;
-    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: #fff;
 }
-button:hover {
-    background-color: #0056b3;
-}
+
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
+    font-size: 13px;
 }
-th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: center;
-}
-.low-stock {
-    background-color: #fdd;
-}
-footer {
-    background: #222;
-    color: white;
-    text-align: center;
+
+th {
+    background: #2c5364;
+    color: #fff;
     padding: 10px;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
 }
+
+td {
+    padding: 9px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.low-stock {
+    background: #ffe5e5;
+    color: #b00000;
+    font-weight: bold;
+}
+
+#chiffre-total {
+    font-size: 24px;
+    font-weight: bold;
+    color: #11998e;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    color: #fff;
+    font-size: 12px;
+    padding: 12px;
+    opacity: 0.8;
+}
+
+@media (min-width: 768px) {
+    main {
+        max-width: 720px;
+        margin: auto;
+    }
+}}
