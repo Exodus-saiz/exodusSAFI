@@ -1,104 +1,120 @@
-const prixGaz = {
-    oryx: { "3": 2000, "6": 4500, "12.5": 10000, "38": 30400 },
-    benin: { "3": 2000, "6": 4500, "12.5": 10000 }
+const produits = {
+    oryx: { label: "Oryx", poids: { "3": 2000, "6": 4500, "12.5": 10000 }},
+    benin: { label: "Bénin Petro", poids: { "3": 2000, "6": 4500, "12.5": 10000 }},
+    jpn: { label: "JPN", poids: { "6": 4500, "12.5": 10000 }},
+    puma: { label: "Puma", poids: { "6": 4500, "12.5": 10000 }},
+    progaz: { label: "Pro Gaz", poids: { "6": 4500, "12.5": 10000 }}
 };
 
 function updateDateTime() {
-    const now = new Date();
-    document.getElementById('datetime').textContent = now.toLocaleString();
+    document.getElementById("datetime").textContent =
+        new Date().toLocaleString();
 }
 setInterval(updateDateTime, 1000);
 updateDateTime();
 
-function getStockKey(type, weight) {
-    return `${type}_${weight}`;
+function stockKey(marque, poids) {
+    return `stock_${marque}_${poids}`;
 }
 
-function getVenteTotalKey() {
-    return "chiffre_total";
+function loadMarques() {
+    ["gaz-type", "vente-gaz-type"].forEach(id => {
+        const select = document.getElementById(id);
+        select.innerHTML = "";
+        for (let k in produits) {
+            select.innerHTML += `<option value="${k}">${produits[k].label}</option>`;
+        }
+    });
+    updatePoidsStock();
+    updatePoidsVente();
 }
 
-function setInitialStock() {
-    const type = document.getElementById("gaz-type").value;
-    const poids = document.getElementById("gaz-poids").value;
-    const qty = parseInt(document.getElementById("initial-qty").value);
-    if (!isNaN(qty) && qty >= 0) {
-        localStorage.setItem(getStockKey(type, poids), qty);
-        afficherStock();
+function updatePoidsStock() {
+    const marque = document.getElementById("gaz-type").value;
+    const select = document.getElementById("gaz-poids");
+    select.innerHTML = "";
+    for (let p in produits[marque].poids) {
+        select.innerHTML += `<option value="${p}">${p} kg</option>`;
     }
 }
 
-function updatePrixUnitaire() {
-    const type = document.getElementById("vente-gaz-type").value;
+function updatePoidsVente() {
+    const marque = document.getElementById("vente-gaz-type").value;
+    const select = document.getElementById("vente-poids");
+    select.innerHTML = "";
+    for (let p in produits[marque].poids) {
+        select.innerHTML += `<option value="${p}">${p} kg</option>`;
+    }
+    updatePrix();
+}
+
+function updatePrix() {
+    const marque = document.getElementById("vente-gaz-type").value;
     const poids = document.getElementById("vente-poids").value;
-    const prix = prixGaz[type]?.[poids] || 0;
+    const prix = produits[marque].poids[poids];
     document.getElementById("prix-unitaire").value = prix;
     updateTotal();
 }
 
 function updateTotal() {
     const prix = parseInt(document.getElementById("prix-unitaire").value) || 0;
-    const quantite = parseInt(document.getElementById("quantite").value) || 0;
-    document.getElementById("total").value = prix * quantite;
+    const qte = parseInt(document.getElementById("quantite").value) || 0;
+    document.getElementById("total").value = prix * qte;
+}
+
+function ajouterStock() {
+    const marque = document.getElementById("gaz-type").value;
+    const poids = document.getElementById("gaz-poids").value;
+    const qte = parseInt(document.getElementById("initial-qty").value) || 0;
+    localStorage.setItem(stockKey(marque, poids), qte);
+    afficherStock();
 }
 
 function enregistrerVente() {
-    const type = document.getElementById("vente-gaz-type").value;
+    const marque = document.getElementById("vente-gaz-type").value;
     const poids = document.getElementById("vente-poids").value;
-    const quantite = parseInt(document.getElementById("quantite").value);
-    const prix = parseInt(document.getElementById("prix-unitaire").value);
-    const total = prix * quantite;
+    const qte = parseInt(document.getElementById("quantite").value);
+    const prix = produits[marque].poids[poids];
+    const key = stockKey(marque, poids);
+    let stock = parseInt(localStorage.getItem(key) || 0);
 
-    if (!isNaN(quantite) && quantite > 0) {
-        const key = getStockKey(type, poids);
-        let current = parseInt(localStorage.getItem(key) || "0");
-        if (current >= quantite) {
-            localStorage.setItem(key, current - quantite);
+    if (qte > stock) {
+        alert("Stock insuffisant !");
+        return;
+    }
 
-            let chiffre = parseInt(localStorage.getItem(getVenteTotalKey()) || "0");
-            chiffre += total;
-            localStorage.setItem(getVenteTotalKey(), chiffre);
+    localStorage.setItem(key, stock - qte);
 
-            afficherStock();
-            afficherChiffre();
-            alert("Vente enregistrée !");
-        } else {
-            alert("Stock insuffisant !");
+    let chiffre = parseInt(localStorage.getItem("chiffre") || 0);
+    chiffre += prix * qte;
+    localStorage.setItem("chiffre", chiffre);
+
+    afficherStock();
+    afficherChiffre();
+    alert("Vente enregistrée");
+}
+
+function afficherStock() {
+    const tbody = document.getElementById("stock-table");
+    tbody.innerHTML = "";
+    for (let m in produits) {
+        for (let p in produits[m].poids) {
+            const q = parseInt(localStorage.getItem(stockKey(m, p)) || 0);
+            const tr = document.createElement("tr");
+            if (q < 5) tr.classList.add("low-stock");
+            tr.innerHTML = `<td>${produits[m].label}</td><td>${p} kg</td><td>${q}</td>`;
+            tbody.appendChild(tr);
         }
     }
 }
 
-function afficherStock() {
-    const table = document.querySelector("#stock-table tbody");
-    table.innerHTML = "";
-    const types = ["oryx", "benin"];
-    const poids = ["3", "6", "12.5", "38"];
-    types.forEach(type => {
-        let totalParType = 0;
-        poids.forEach(p => {
-            if (prixGaz[type]?.[p] !== undefined) {
-                const key = getStockKey(type, p);
-                const qty = parseInt(localStorage.getItem(key) || "0");
-                totalParType += qty;
-                const row = document.createElement("tr");
-                if (qty < 5) row.classList.add("low-stock");
-                row.innerHTML = `<td>${type}</td><td>${p} kg</td><td>${qty}</td>`;
-                table.appendChild(row);
-            }
-        });
-        const rowTotal = document.createElement("tr");
-        rowTotal.innerHTML = `<td colspan="2"><strong>Total ${type}</strong></td><td><strong>${totalParType}</strong></td>`;
-        table.appendChild(rowTotal);
-    });
-}
-
 function afficherChiffre() {
-    const chiffre = parseInt(localStorage.getItem(getVenteTotalKey()) || "0");
-    document.getElementById("chiffre-total").textContent = `${chiffre} FCFA`;
+    document.getElementById("chiffre-total").textContent =
+        (localStorage.getItem("chiffre") || 0) + " FCFA";
 }
 
-window.onload = function () {
-    updatePrixUnitaire();
+window.onload = () => {
+    loadMarques();
     afficherStock();
     afficherChiffre();
-};
+};};
