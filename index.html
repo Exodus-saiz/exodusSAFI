@@ -7,102 +7,102 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div id="datetime"></div>
-    </header>
 
-    <main>
-        <section id="stock-section">
-            <h2>Définir le stock initial</h2>
-            <div class="form-group">
-                <label for="gaz-type">Type de gaz</label>
-                <select id="gaz-type">
-                    <option value="oryx">Oryx Gaz</option>
-                    <option value="benin">Bénin Petro Gaz</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="gaz-poids">Poids</label>
-                <select id="gaz-poids">
-                    <option value="3">3 kg</option>
-                    <option value="6">6 kg</option>
-                    <option value="12.5">12,5 kg</option>
-                    <option value="38">38 kg</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="initial-qty">Quantité en stock</label>
-                <input type="number" id="initial-qty" min="0">
-                <button onclick="setInitialStock()">Définir</button>
-            </div>
-        </section>
+<header>
+    <div id="datetime"></div>
+</header>
 
-        <section id="vente-section">
-            <h2>Nouvelle vente</h2>
-            <div class="form-group">
-                <label for="vendeur">Utilisateur</label>
-                <select id="vendeur">
-                    <option value="Exodus">Exodus</option>
-                    <option value="Angèle">Angèle</option>
-                    <option value="Penes">Penes</option>
-                    <option value="Maman">Maman</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="vente-gaz-type">Type de gaz</label>
-                <select id="vente-gaz-type" onchange="updatePrixUnitaire()">
-                    <option value="oryx">Oryx Gaz</option>
-                    <option value="benin">Bénin Petro Gaz</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="vente-poids">Poids</label>
-                <select id="vente-poids" onchange="updatePrixUnitaire()">
-                    <option value="3">3 kg</option>
-                    <option value="6">6 kg</option>
-                    <option value="12.5">12,5 kg</option>
-                    <option value="38">38 kg</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="prix-unitaire">Prix unitaire (FCFA)</label>
-                <input type="text" id="prix-unitaire" readonly>
-            </div>
-            <div class="form-group">
-                <label for="quantite">Quantité vendue</label>
-                <input type="number" id="quantite" min="1" onchange="updateTotal()" oninput="updateTotal()">
-            </div>
-            <div class="form-group">
-                <label for="total">Total (FCFA)</label>
-                <input type="text" id="total" readonly>
-                <button onclick="enregistrerVente()">Valider la vente</button>
-            </div>
-        </section>
+<main>
 
-        <section id="stock-actuel">
-            <h2>Stock actuel</h2>
-            <table id="stock-table">
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Poids</th>
-                        <th>Quantité</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </section>
+    <!-- STOCK -->
+    <section>
+        <h2>Gestion du stock</h2>
 
-        <section id="total-chiffre">
-            <h2>Chiffre d'affaires total</h2>
-            <p id="chiffre-total">0 FCFA</p>
-        </section>
-    </main>
+        <div class="form-group">
+            <label>Marque</label>
+            <select id="gaz-type" onchange="updatePoidsStock()"></select>
+        </div>
 
-    <footer>
-        Site créé par Exodus Saïz
-    </footer>
+        <div class="form-group">
+            <label>Poids</label>
+            <select id="gaz-poids"></select>
+        </div>
 
-    <script src="script.js"></script>
+        <div class="form-group">
+            <label>Quantité</label>
+            <input type="number" id="initial-qty" min="0">
+        </div>
+
+        <button onclick="ajouterStock()">Ajouter / Modifier stock</button>
+    </section>
+
+    <!-- VENTE -->
+    <section>
+        <h2>Nouvelle vente</h2>
+
+        <div class="form-group">
+            <label>Utilisateur</label>
+            <select id="vendeur">
+                <option>Glorad Saizonou</option>
+                <option>Utilisateur 1</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Marque</label>
+            <select id="vente-gaz-type" onchange="updatePoidsVente()"></select>
+        </div>
+
+        <div class="form-group">
+            <label>Poids</label>
+            <select id="vente-poids" onchange="updatePrix()"></select>
+        </div>
+
+        <div class="form-group">
+            <label>Prix unitaire (FCFA)</label>
+            <input type="text" id="prix-unitaire" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Quantité vendue</label>
+            <input type="number" id="quantite" min="1" oninput="updateTotal()">
+        </div>
+
+        <div class="form-group">
+            <label>Total (FCFA)</label>
+            <input type="text" id="total" readonly>
+        </div>
+
+        <button onclick="enregistrerVente()">Valider la vente</button>
+    </section>
+
+    <!-- STOCK ACTUEL -->
+    <section>
+        <h2>Stock actuel</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Marque</th>
+                    <th>Poids</th>
+                    <th>Qté</th>
+                </tr>
+            </thead>
+            <tbody id="stock-table"></tbody>
+        </table>
+    </section>
+
+    <!-- CHIFFRE -->
+    <section id="total-chiffre">
+        <h2>Chiffre d'affaires</h2>
+        <p id="chiffre-total">0 FCFA</p>
+    </section>
+
+</main>
+
+<footer>
+    Site créé par Exodus Saïzonou
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
