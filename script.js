@@ -20,18 +20,21 @@ setInterval(updateDateTime, 1000);
 updateDateTime();
 
 /* =========================
-   OUTILS
+   UTILITAIRES
 ========================= */
 function stockKey(marque, poids) {
     return `stock_${marque}_${poids}`;
 }
 
+function archiveKey(date) {
+    return `archive_${date}`;
+}
+
 /* =========================
-   CHARGEMENT DES MARQUES
+   GESTION DES MARQUES ET POIDS
 ========================= */
 function loadMarques() {
     const selects = ["gaz-type", "vente-gaz-type"];
-
     selects.forEach(id => {
         const select = document.getElementById(id);
         select.innerHTML = "";
@@ -43,44 +46,33 @@ function loadMarques() {
         }
         select.selectedIndex = 0;
     });
-
     updatePoidsStock();
     updatePoidsVente();
 }
 
-/* =========================
-   POIDS STOCK
-========================= */
 function updatePoidsStock() {
     const marque = document.getElementById("gaz-type").value;
     const select = document.getElementById("gaz-poids");
     select.innerHTML = "";
-
     for (let p in produits[marque].poids) {
         const opt = document.createElement("option");
         opt.value = p;
         opt.textContent = `${p} kg`;
         select.appendChild(opt);
     }
-
     select.selectedIndex = 0;
 }
 
-/* =========================
-   POIDS VENTE
-========================= */
 function updatePoidsVente() {
     const marque = document.getElementById("vente-gaz-type").value;
     const select = document.getElementById("vente-poids");
     select.innerHTML = "";
-
     for (let p in produits[marque].poids) {
         const opt = document.createElement("option");
         opt.value = p;
         opt.textContent = `${p} kg`;
         select.appendChild(opt);
     }
-
     select.selectedIndex = 0;
     updatePrix();
 }
@@ -109,51 +101,57 @@ function ajouterStock() {
     const marque = document.getElementById("gaz-type").value;
     const poids = document.getElementById("gaz-poids").value;
     const qte = parseInt(document.getElementById("initial-qty").value);
-
-    if (isNaN(qte) || qte < 0) {
-        alert("Quantité invalide");
-        return;
-    }
-
+    if (isNaN(qte) || qte < 0) { alert("Quantité invalide"); return; }
     localStorage.setItem(stockKey(marque, poids), qte);
     afficherStock();
-    alert("Stock mis à jour");
+    alert("Stock mis à jour !");
 }
 
 /* =========================
-   ENREGISTRER VENTE
+   ENREGISTRER VENTE ET ARCHIVES
 ========================= */
 function enregistrerVente() {
     const marque = document.getElementById("vente-gaz-type").value;
     const poids = document.getElementById("vente-poids").value;
     const qte = parseInt(document.getElementById("quantite").value);
-
-    if (isNaN(qte) || qte <= 0) {
-        alert("Quantité invalide");
-        return;
-    }
+    if (isNaN(qte) || qte <= 0) { alert("Quantité invalide"); return; }
 
     const key = stockKey(marque, poids);
     let stock = parseInt(localStorage.getItem(key)) || 0;
-
-    if (qte > stock) {
-        alert("Stock insuffisant !");
-        return;
-    }
+    if (qte > stock) { alert("Stock insuffisant !"); return; }
 
     localStorage.setItem(key, stock - qte);
 
+    const prix = produits[marque].poids[poids];
+    const total = prix * qte;
+
+    // Mettre à jour chiffre global
     let chiffre = parseInt(localStorage.getItem("chiffre")) || 0;
-    chiffre += produits[marque].poids[poids] * qte;
+    chiffre += total;
     localStorage.setItem("chiffre", chiffre);
+
+    // Enregistrement dans les archives
+    const date = new Date().toISOString().split("T")[0];
+    const heure = new Date().toLocaleTimeString("fr-FR");
+    const utilisateur = document.getElementById("vendeur").value;
+
+    let archive = JSON.parse(localStorage.getItem(archiveKey(date))) || [];
+    archive.push({
+        heure,
+        utilisateur,
+        marque: produits[marque].label,
+        poids,
+        qte,
+        prix,
+        total
+    });
+    localStorage.setItem(archiveKey(date), JSON.stringify(archive));
 
     afficherStock();
     afficherChiffre();
-
     document.getElementById("quantite").value = "";
     document.getElementById("total").value = "";
-
-    alert("Vente enregistrée avec succès");
+    alert("Vente enregistrée avec succès !");
 }
 
 /* =========================
@@ -162,7 +160,6 @@ function enregistrerVente() {
 function afficherStock() {
     const tbody = document.getElementById("stock-table");
     tbody.innerHTML = "";
-
     for (let m in produits) {
         for (let p in produits[m].poids) {
             const q = parseInt(localStorage.getItem(stockKey(m, p))) || 0;
@@ -187,10 +184,82 @@ function afficherChiffre() {
 }
 
 /* =========================
+   AFFICHAGE ARCHIVES
+========================= */
+function afficherArchiveJour() {
+    const date = document.getElementById("archive-date").value;
+    const tbody = document.getElementById("archive-table");
+    tbody.innerHTML = "";
+    let totalJour = 0;
+    if (!date) return;
+    const archive = JSON.parse(localStorage.getItem(archiveKey(date))) || [];
+    archive.forEach(v => {
+        totalJour += v.total;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${v.heure}</td>
+            <td>${v.utilisateur}</td>
+            <td>${v.marque}</td>
+            <td>${v.poids} kg</td>
+            <td>${v.qte}</td>
+            <td>${v.prix}</td>
+            <td>${v.total}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    document.getElementById("archive-total").textContent = totalJour + " FCFA";
+}
+
+/* =========================
+   RÉINITIALISATIONS
+========================= */
+function reinitialiserVentes() {
+    if(confirm("Voulez-vous vraiment réinitialiser toutes les ventes ?")) {
+        Object.keys(localStorage).forEach(key => {
+            if(key.startsWith("archive_")) localStorage.removeItem(key);
+        });
+        localStorage.setItem("chiffre", 0);
+        afficherChiffre();
+        document.getElementById("archive-table").innerHTML = "";
+        document.getElementById("archive-total").textContent = "0 FCFA";
+        alert("Ventes réinitialisées !");
+    }
+}
+
+function reinitialiserStock() {
+    if(confirm("Voulez-vous vraiment réinitialiser tout le stock ?")) {
+        Object.keys(localStorage).forEach(key => {
+            if(key.startsWith("stock_")) localStorage.removeItem(key);
+        });
+        afficherStock();
+        alert("Stock réinitialisé !");
+    }
+}
+
+function reinitialiserTout() {
+    if(confirm("Voulez-vous vraiment tout réinitialiser ?")) {
+        localStorage.clear();
+        afficherStock();
+        afficherChiffre();
+        document.getElementById("archive-table").innerHTML = "";
+        document.getElementById("archive-total").textContent = "0 FCFA";
+        alert("Toutes les données ont été réinitialisées !");
+    }
+}
+
+/* =========================
+   NAVIGATION ENTRE SECTIONS
+========================= */
+function showSection(id) {
+    document.querySelectorAll(".section").forEach(s => s.style.display="none");
+    document.getElementById(id).style.display = "block";
+}
+
+/* =========================
    INIT
 ========================= */
 window.onload = () => {
     loadMarques();
     afficherStock();
     afficherChiffre();
-};
+}};
