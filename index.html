@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>safi-fils</title>
+    <title>Safi & Fils</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,32 +14,36 @@
 
 <main>
 
-    <!-- STOCK -->
-    <section>
-        <h2>Gestion du stock</h2>
+    <!-- MENU -->
+    <nav>
+        <button onclick="showSection('stock-section')">Stock</button>
+        <button onclick="showSection('vente-section')">Nouvelle Vente</button>
+        <button onclick="showSection('dashboard-section')">Tableau de Bord</button>
+        <button onclick="showSection('archives-section')">Archives</button>
+        <button onclick="showSection('settings-section')">Paramètres</button>
+    </nav>
 
+    <!-- STOCK -->
+    <section id="stock-section" class="section">
+        <h2>Gestion du stock</h2>
         <div class="form-group">
             <label>Marque</label>
             <select id="gaz-type" onchange="updatePoidsStock()"></select>
         </div>
-
         <div class="form-group">
             <label>Poids</label>
             <select id="gaz-poids"></select>
         </div>
-
         <div class="form-group">
             <label>Quantité</label>
             <input type="number" id="initial-qty" min="0">
         </div>
-
         <button onclick="ajouterStock()">Ajouter / Modifier stock</button>
     </section>
 
     <!-- VENTE -->
-    <section>
+    <section id="vente-section" class="section" style="display:none;">
         <h2>Nouvelle vente</h2>
-
         <div class="form-group">
             <label>Utilisateur</label>
             <select id="vendeur">
@@ -47,54 +51,81 @@
                 <option>Utilisateur 1</option>
             </select>
         </div>
-
         <div class="form-group">
             <label>Marque</label>
             <select id="vente-gaz-type" onchange="updatePoidsVente()"></select>
         </div>
-
         <div class="form-group">
             <label>Poids</label>
             <select id="vente-poids" onchange="updatePrix()"></select>
         </div>
-
         <div class="form-group">
             <label>Prix unitaire (FCFA)</label>
             <input type="text" id="prix-unitaire" readonly>
         </div>
-
         <div class="form-group">
             <label>Quantité vendue</label>
             <input type="number" id="quantite" min="1" oninput="updateTotal()">
         </div>
-
         <div class="form-group">
             <label>Total (FCFA)</label>
             <input type="text" id="total" readonly>
         </div>
-
         <button onclick="enregistrerVente()">Valider la vente</button>
     </section>
 
-    <!-- STOCK ACTUEL -->
-    <section>
-        <h2>Stock actuel</h2>
+    <!-- DASHBOARD -->
+    <section id="dashboard-section" class="section" style="display:none;">
+        <h2>Tableau de Bord</h2>
+        <section>
+            <h3>Stock actuel</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Marque</th>
+                        <th>Poids</th>
+                        <th>Qté</th>
+                    </tr>
+                </thead>
+                <tbody id="stock-table"></tbody>
+            </table>
+        </section>
+        <section>
+            <h3>Chiffre d'affaires total</h3>
+            <p id="chiffre-total">0 FCFA</p>
+        </section>
+    </section>
+
+    <!-- ARCHIVES -->
+    <section id="archives-section" class="section" style="display:none;">
+        <h2>Archives</h2>
+        <div class="form-group">
+            <label>Choisir la date</label>
+            <input type="date" id="archive-date" onchange="afficherArchiveJour()">
+        </div>
         <table>
             <thead>
                 <tr>
+                    <th>Heure</th>
+                    <th>Utilisateur</th>
                     <th>Marque</th>
                     <th>Poids</th>
-                    <th>Qté</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                    <th>Total</th>
                 </tr>
             </thead>
-            <tbody id="stock-table"></tbody>
+            <tbody id="archive-table"></tbody>
         </table>
+        <p>Total du jour : <span id="archive-total">0 FCFA</span></p>
     </section>
 
-    <!-- CHIFFRE -->
-    <section id="total-chiffre">
-        <h2>Chiffre d'affaires</h2>
-        <p id="chiffre-total">0 FCFA</p>
+    <!-- PARAMÈTRES -->
+    <section id="settings-section" class="section" style="display:none;">
+        <h2>Paramètres</h2>
+        <button onclick="reinitialiserVentes()">Réinitialiser les ventes</button>
+        <button onclick="reinitialiserStock()">Réinitialiser le stock</button>
+        <button onclick="reinitialiserTout()">Réinitialiser tout</button>
     </section>
 
 </main>
@@ -105,4 +136,5 @@
 
 <script src="script.js"></script>
 </body>
+</html></body>
 </html>
