@@ -1,5 +1,7 @@
+console.log("Script chargé !");
+
 /* =========================
-   PRODUITS & PRIX (FIXES)
+   PRODUITS & PRIX
 ========================= */
 const produits = {
     oryx: { label: "Oryx", poids: { "3": 2000, "6": 4500, "12.5": 10000 } },
@@ -17,21 +19,15 @@ function updateDateTime() {
         new Date().toLocaleString("fr-FR");
 }
 setInterval(updateDateTime, 1000);
-updateDateTime();
 
 /* =========================
    UTILITAIRES
 ========================= */
-function stockKey(marque, poids) {
-    return `stock_${marque}_${poids}`;
-}
-
-function archiveKey(date) {
-    return `archive_${date}`;
-}
+function stockKey(marque, poids) { return `stock_${marque}_${poids}`; }
+function archiveKey(date) { return `archive_${date}`; }
 
 /* =========================
-   GESTION DES MARQUES ET POIDS
+   CHARGEMENT DES MARQUES
 ========================= */
 function loadMarques() {
     const selects = ["gaz-type", "vente-gaz-type"];
@@ -44,12 +40,14 @@ function loadMarques() {
             opt.textContent = produits[m].label;
             select.appendChild(opt);
         }
-        select.selectedIndex = 0;
     });
     updatePoidsStock();
     updatePoidsVente();
 }
 
+/* =========================
+   POIDS STOCK & VENTE
+========================= */
 function updatePoidsStock() {
     const marque = document.getElementById("gaz-type").value;
     const select = document.getElementById("gaz-poids");
@@ -60,7 +58,6 @@ function updatePoidsStock() {
         opt.textContent = `${p} kg`;
         select.appendChild(opt);
     }
-    select.selectedIndex = 0;
 }
 
 function updatePoidsVente() {
@@ -73,7 +70,6 @@ function updatePoidsVente() {
         opt.textContent = `${p} kg`;
         select.appendChild(opt);
     }
-    select.selectedIndex = 0;
     updatePrix();
 }
 
@@ -89,177 +85,138 @@ function updatePrix() {
 }
 
 function updateTotal() {
-    const prix = parseInt(document.getElementById("prix-unitaire").value) || 0;
-    const qte = parseInt(document.getElementById("quantite").value) || 0;
-    document.getElementById("total").value = prix * qte;
+    const prix = parseInt(document.getElementById("prix-unitaire").value)||0;
+    const qte = parseInt(document.getElementById("quantite").value)||0;
+    document.getElementById("total").value = prix*qte;
 }
 
 /* =========================
-   AJOUT / MODIFICATION STOCK
+   STOCK
 ========================= */
 function ajouterStock() {
     const marque = document.getElementById("gaz-type").value;
     const poids = document.getElementById("gaz-poids").value;
     const qte = parseInt(document.getElementById("initial-qty").value);
-    if (isNaN(qte) || qte < 0) { alert("Quantité invalide"); return; }
-    localStorage.setItem(stockKey(marque, poids), qte);
+    if(isNaN(qte)||qte<0){ alert("Quantité invalide"); return; }
+    localStorage.setItem(stockKey(marque,poids),qte);
     afficherStock();
     alert("Stock mis à jour !");
 }
 
-/* =========================
-   ENREGISTRER VENTE ET ARCHIVES
-========================= */
-function enregistrerVente() {
-    const marque = document.getElementById("vente-gaz-type").value;
-    const poids = document.getElementById("vente-poids").value;
-    const qte = parseInt(document.getElementById("quantite").value);
-    if (isNaN(qte) || qte <= 0) { alert("Quantité invalide"); return; }
-
-    const key = stockKey(marque, poids);
-    let stock = parseInt(localStorage.getItem(key)) || 0;
-    if (qte > stock) { alert("Stock insuffisant !"); return; }
-
-    localStorage.setItem(key, stock - qte);
-
-    const prix = produits[marque].poids[poids];
-    const total = prix * qte;
-
-    // Mettre à jour chiffre global
-    let chiffre = parseInt(localStorage.getItem("chiffre")) || 0;
-    chiffre += total;
-    localStorage.setItem("chiffre", chiffre);
-
-    // Enregistrement dans les archives
-    const date = new Date().toISOString().split("T")[0];
-    const heure = new Date().toLocaleTimeString("fr-FR");
-    const utilisateur = document.getElementById("vendeur").value;
-
-    let archive = JSON.parse(localStorage.getItem(archiveKey(date))) || [];
-    archive.push({
-        heure,
-        utilisateur,
-        marque: produits[marque].label,
-        poids,
-        qte,
-        prix,
-        total
-    });
-    localStorage.setItem(archiveKey(date), JSON.stringify(archive));
-
-    afficherStock();
-    afficherChiffre();
-    document.getElementById("quantite").value = "";
-    document.getElementById("total").value = "";
-    alert("Vente enregistrée avec succès !");
-}
-
-/* =========================
-   AFFICHAGE STOCK
-========================= */
 function afficherStock() {
-    const tbody = document.getElementById("stock-table");
-    tbody.innerHTML = "";
-    for (let m in produits) {
-        for (let p in produits[m].poids) {
-            const q = parseInt(localStorage.getItem(stockKey(m, p))) || 0;
-            const tr = document.createElement("tr");
-            if (q < 5) tr.classList.add("low-stock");
-            tr.innerHTML = `
-                <td>${produits[m].label}</td>
-                <td>${p} kg</td>
-                <td>${q}</td>
-            `;
+    const tbody=document.getElementById("stock-table");
+    tbody.innerHTML="";
+    for(let m in produits){
+        for(let p in produits[m].poids){
+            const q=parseInt(localStorage.getItem(stockKey(m,p)))||0;
+            const tr=document.createElement("tr");
+            if(q<5) tr.classList.add("low-stock");
+            tr.innerHTML=`<td>${produits[m].label}</td><td>${p} kg</td><td>${q}</td>`;
             tbody.appendChild(tr);
         }
     }
 }
 
 /* =========================
-   AFFICHAGE CHIFFRE
+   VENTES
 ========================= */
-function afficherChiffre() {
-    document.getElementById("chiffre-total").textContent =
-        (localStorage.getItem("chiffre") || 0) + " FCFA";
+function enregistrerVente(){
+    const marque=document.getElementById("vente-gaz-type").value;
+    const poids=document.getElementById("vente-poids").value;
+    const qte=parseInt(document.getElementById("quantite").value);
+    if(isNaN(qte)||qte<=0){ alert("Quantité invalide"); return; }
+    const key=stockKey(marque,poids);
+    let stock=parseInt(localStorage.getItem(key))||0;
+    if(qte>stock){ alert("Stock insuffisant !"); return; }
+    localStorage.setItem(key,stock-qte);
+
+    const prix=produits[marque].poids[poids];
+    const total=prix*qte;
+
+    // Chiffre global
+    let chiffre=parseInt(localStorage.getItem("chiffre"))||0;
+    chiffre+=total;
+    localStorage.setItem("chiffre",chiffre);
+
+    // Archive
+    const date=new Date().toISOString().split("T")[0];
+    const heure=new Date().toLocaleTimeString("fr-FR");
+    const utilisateur=document.getElementById("vendeur").value;
+    let archive=JSON.parse(localStorage.getItem(archiveKey(date)))||[];
+    archive.push({heure,utilisateur,marque:produits[marque].label,poids,qte,prix,total});
+    localStorage.setItem(archiveKey(date),JSON.stringify(archive));
+
+    afficherStock();
+    afficherChiffre();
+    document.getElementById("quantite").value="";
+    document.getElementById("total").value="";
+    alert("Vente enregistrée !");
+}
+
+function afficherChiffre(){
+    document.getElementById("chiffre-total").textContent=
+        (localStorage.getItem("chiffre")||0)+" FCFA";
 }
 
 /* =========================
-   AFFICHAGE ARCHIVES
+   ARCHIVES
 ========================= */
-function afficherArchiveJour() {
-    const date = document.getElementById("archive-date").value;
-    const tbody = document.getElementById("archive-table");
-    tbody.innerHTML = "";
-    let totalJour = 0;
-    if (!date) return;
-    const archive = JSON.parse(localStorage.getItem(archiveKey(date))) || [];
-    archive.forEach(v => {
-        totalJour += v.total;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${v.heure}</td>
-            <td>${v.utilisateur}</td>
-            <td>${v.marque}</td>
-            <td>${v.poids} kg</td>
-            <td>${v.qte}</td>
-            <td>${v.prix}</td>
-            <td>${v.total}</td>
-        `;
+function afficherArchiveJour(){
+    const date=document.getElementById("archive-date").value;
+    const tbody=document.getElementById("archive-table");
+    tbody.innerHTML="";
+    if(!date) return;
+    const archive=JSON.parse(localStorage.getItem(archiveKey(date)))||[];
+    let total=0;
+    archive.forEach(v=>{
+        total+=v.total;
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${v.heure}</td><td>${v.utilisateur}</td><td>${v.marque}</td><td>${v.poids} kg</td><td>${v.qte}</td><td>${v.prix}</td><td>${v.total}</td>`;
         tbody.appendChild(tr);
     });
-    document.getElementById("archive-total").textContent = totalJour + " FCFA";
+    document.getElementById("archive-total").textContent=total+" FCFA";
 }
 
 /* =========================
-   RÉINITIALISATIONS
+   RÉINITIALISATION
 ========================= */
-function reinitialiserVentes() {
-    if(confirm("Voulez-vous vraiment réinitialiser toutes les ventes ?")) {
-        Object.keys(localStorage).forEach(key => {
-            if(key.startsWith("archive_")) localStorage.removeItem(key);
-        });
-        localStorage.setItem("chiffre", 0);
-        afficherChiffre();
-        document.getElementById("archive-table").innerHTML = "";
-        document.getElementById("archive-total").textContent = "0 FCFA";
-        alert("Ventes réinitialisées !");
-    }
+function reinitialiserVentes(){if(confirm("Réinitialiser toutes les ventes ?")){
+    Object.keys(localStorage).forEach(k=>{if(k.startsWith("archive_")) localStorage.removeItem(k);});
+    localStorage.setItem("chiffre",0);
+    afficherChiffre();
+    document.getElementById("archive-table").innerHTML="";
+    document.getElementById("archive-total").textContent="0 FCFA";
+    alert("Ventes réinitialisées !");}
 }
-
-function reinitialiserStock() {
-    if(confirm("Voulez-vous vraiment réinitialiser tout le stock ?")) {
-        Object.keys(localStorage).forEach(key => {
-            if(key.startsWith("stock_")) localStorage.removeItem(key);
-        });
-        afficherStock();
-        alert("Stock réinitialisé !");
-    }
+function reinitialiserStock(){if(confirm("Réinitialiser tout le stock ?")){
+    Object.keys(localStorage).forEach(k=>{if(k.startsWith("stock_")) localStorage.removeItem(k);});
+    afficherStock();
+    alert("Stock réinitialisé !");}
 }
-
-function reinitialiserTout() {
-    if(confirm("Voulez-vous vraiment tout réinitialiser ?")) {
-        localStorage.clear();
-        afficherStock();
-        afficherChiffre();
-        document.getElementById("archive-table").innerHTML = "";
-        document.getElementById("archive-total").textContent = "0 FCFA";
-        alert("Toutes les données ont été réinitialisées !");
-    }
+function reinitialiserTout(){if(confirm("Réinitialiser toutes les données ?")){
+    localStorage.clear();
+    afficherStock();
+    afficherChiffre();
+    document.getElementById("archive-table").innerHTML="";
+    document.getElementById("archive-total").textContent="0 FCFA";
+    alert("Toutes les données ont été réinitialisées !");}
 }
 
 /* =========================
-   NAVIGATION ENTRE SECTIONS
+   NAVIGATION
 ========================= */
-function showSection(id) {
-    document.querySelectorAll(".section").forEach(s => s.style.display="none");
-    document.getElementById(id).style.display = "block";
+function showSection(id){
+    document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+    document.getElementById(id).style.display="block";
 }
 
 /* =========================
    INIT
 ========================= */
-window.onload = () => {
+window.onload=()=>{
+    console.log("Page initialisée !");
     loadMarques();
     afficherStock();
     afficherChiffre();
-}};
+    showSection("stock-section"); // section visible par défaut
+};}};
