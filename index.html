@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Safi & Fils</title>
-    <!-- CHEMIN CORRIGÉ -->
+
+    <!-- Feuille de style (chemin relatif GitHub Pages) -->
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
@@ -78,6 +79,7 @@
     <!-- DASHBOARD -->
     <section id="dashboard-section" class="section" style="display:none;">
         <h2>Tableau de Bord</h2>
+
         <section>
             <h3>Stock actuel</h3>
             <table>
@@ -91,6 +93,7 @@
                 <tbody id="stock-table"></tbody>
             </table>
         </section>
+
         <section>
             <h3>Chiffre d'affaires total</h3>
             <p id="chiffre-total">0 FCFA</p>
@@ -100,10 +103,12 @@
     <!-- ARCHIVES -->
     <section id="archives-section" class="section" style="display:none;">
         <h2>Archives</h2>
+
         <div class="form-group">
             <label>Choisir la date</label>
             <input type="date" id="archive-date" onchange="afficherArchiveJour()">
         </div>
+
         <table>
             <thead>
                 <tr>
@@ -118,6 +123,7 @@
             </thead>
             <tbody id="archive-table"></tbody>
         </table>
+
         <p>Total du jour : <span id="archive-total">0 FCFA</span></p>
     </section>
 
@@ -135,8 +141,8 @@
     Site créé par Exodus Saïzonou
 </footer>
 
-<!-- CHEMIN CORRIGÉ -->
-<script src="./script.js"></script>
+<!-- Script JS chargé après le DOM -->
+<script src="./script.js" defer></script>
+
 </body>
-</html></body>
-</html></html>
+</html></html></html>
