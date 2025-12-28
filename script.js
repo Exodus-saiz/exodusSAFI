@@ -290,4 +290,4 @@ window.onload = () => {
     afficherStock();
     afficherChiffre();
     showSection("stock-section"); // section visible par défaut
-};/* =========================    afficherChiffre();
+};
