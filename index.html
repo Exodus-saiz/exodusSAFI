@@ -4,18 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Safi & Fils</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./style.css">
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
-
 <header>
     <div id="datetime"></div>
 </header>
 
 <main>
+    <!-- MESSAGE SÉCURITÉ -->
+    <div id="access-denied" style="display:none; text-align:center; padding:20px; color:red;">
+        Accès refusé. Vous n'êtes pas autorisé.
+    </div>
 
     <!-- MENU -->
-    <nav>
+    <nav id="main-menu" style="display:none;">
         <button onclick="showSection('stock-section')">Stock</button>
         <button onclick="showSection('vente-section')">Nouvelle Vente</button>
         <button onclick="showSection('dashboard-section')">Tableau de Bord</button>
@@ -109,7 +115,7 @@
         </div>
         <div class="form-group">
             <label>Année</label>
-            <input type="number" id="archive-year" min="2023" max="2100" onchange="afficherArchiveAnnee()">
+            <input type="number" id="archive-year" min="2000" max="2100" onchange="afficherArchiveAnnee()">
         </div>
         <table>
             <thead>
@@ -142,6 +148,6 @@
     Site créé par Exodus Saïzonou
 </footer>
 
-<script src="script.js"></script>
+<script src="./script.js"></script>
 </body>
 </html>
