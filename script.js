@@ -241,4 +241,4 @@ window.onload=()=>{
     afficherStock();
     afficherChiffre();
     showSection("stock-section");
-};window.onload=()=>{loadMarques(); afficherStock(); afficherChiffre(); showSection("stock-section");};
+};
