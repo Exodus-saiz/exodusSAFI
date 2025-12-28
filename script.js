@@ -189,4 +189,4 @@ function reinitialiserVentes(){ if(!confirm("Réinitialiser toutes les ventes 
 function reinitialiserStock(){ if(!confirm("Réinitialiser le stock ?"))return; Object.keys(localStorage).forEach(k=>{ if(k.startsWith("stock_"))localStorage.removeItem(k)}); afficherStock(); alert("Stock effacé"); }
 function reinitialiserTout(){ if(!confirm("Effacer toutes les données ?"))return; localStorage.clear(); afficherStock(); afficherChiffre(); document.getElementById("archive-table").innerHTML=""; document.getElementById("archive-total").textContent="0 FCFA"; alert("Toutes les données effacées"); }
 function showSection(id){document.querySelectorAll(".section").forEach(s=>s.style.display="none"); document.getElementById(id).style.display="block";}
-window.onload=()=>{loadMarques(); afficherStock(); afficherChiffre(); showSection("stock-section");};};
+window.onload=()=>{loadMarques(); afficherStock(); afficherChiffre(); showSection("stock-section");};
