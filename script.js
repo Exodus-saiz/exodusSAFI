@@ -1,14 +1,17 @@
-console.log("Script final chargé !");
+console.log("Script corrigé chargé !");
 
 // ACCÈS SÉCURISÉ
 const urlParams = new URLSearchParams(window.location.search);
 const accessKey = urlParams.get("access");
-if(accessKey!=="oryx229"){
-  document.getElementById("main-menu").style.display="none";
-  document.getElementById("access-denied").style.display="block";
+
+if(accessKey !== "oryx229"){
+    document.getElementById("main-menu").style.display = "none";
+    document.getElementById("access-denied").style.display = "block";
+} else {
+    document.getElementById("main-menu").style.display = "block";
 }
 
-// CONFIG FIREBASE
+// FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCFAkmwlIiygEKD2ZEXP29eOxkvK2RMfFs",
   authDomain: "exodus-safi-stock.firebaseapp.com",
@@ -16,13 +19,13 @@ const firebaseConfig = {
   projectId: "exodus-safi-stock",
   storageBucket: "exodus-safi-stock.appspot.com",
   messagingSenderId: "611374713628",
-  appId: "1:611374713628:web:97529b3c5a3fc25e8f08d9",
+  appId: "1:611374713628:web:97529b3c5fc25e8f08d9",
   measurementId: "G-X6KB7GN7M6"
 };
 firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
+const db = firebase.database();
 
-// PRODUITS & PRIX
+// PRODUITS
 const produits = {
   oryx:{label:"Oryx",poids:{"3":2000,"6":4500,"12.5":10000}},
   benin:{label:"Bénin Petro",poids:{"3":2000,"6":4500,"12.5":10000}},
@@ -32,12 +35,12 @@ const produits = {
 };
 
 // DATE & HEURE
-function updateDateTime(){ document.getElementById("datetime").textContent=new Date().toLocaleString("fr-FR"); }
+function updateDateTime(){ document.getElementById("datetime").textContent = new Date().toLocaleString("fr-FR"); }
 updateDateTime(); setInterval(updateDateTime,1000);
 
 // UTILITAIRES
-function stockKey(marque,poids){return `stock_${marque}_${poids}`; }
-function archiveKey(date){return `archive_${date}`; }
+function stockKey(m,p){ return `stock_${m}_${p}`; }
+function archiveKey(date){ return `archive_${date}`; }
 
 // CHARGEMENT MARQUES
 function loadMarques(){
@@ -57,10 +60,10 @@ function updatePoidsStock(){ const m=document.getElementById("gaz-type").value; 
 function updatePoidsVente(){ const m=document.getElementById("vente-gaz-type").value; const s=document.getElementById("vente-poids"); s.innerHTML=""; Object.keys(produits[m].poids).forEach(p=>{ const opt=document.createElement("option"); opt.value=p; opt.textContent=p+" kg"; s.appendChild(opt); }); updatePrix(); }
 
 // PRIX & TOTAL
-function updatePrix(){ const m=document.getElementById("vente-gaz-type").value; const p=document.getElementById("vente-poids").value; document.getElementById("prix-unitaire").value=produits[m].poids[p]; updateTotal(); }
+function updatePrix(){ const m=document.getElementById("vente-gaz-type").value; const p=document.getElementById("vente-poids").value; document.getElementById("prix-unitaire").value = produits[m].poids[p]; updateTotal(); }
 function updateTotal(){ const prix=parseInt(document.getElementById("prix-unitaire").value)||0; const qte=parseInt(document.getElementById("quantite").value)||0; document.getElementById("total").value=prix*qte; }
 
-// STOCK + FIREBASE
+// STOCK
 function ajouterStock(){
   const m=document.getElementById("gaz-type").value;
   const p=document.getElementById("gaz-poids").value;
@@ -75,8 +78,7 @@ function afficherStock(){
   const tbody=document.getElementById("stock-table");
   db.ref("stock").on("value",snap=>{ tbody.innerHTML=""; const data=snap.val()||{};
     Object.keys(produits).forEach(m=>{ Object.keys(produits[m].poids).forEach(p=>{
-      const q=(data[m]&&data[m][p])||0;
-      const tr=document.createElement("tr"); if(q<5) tr.classList.add("low-stock");
+      const q=(data[m]&&data[m][p])||0; const tr=document.createElement("tr"); if(q<5) tr.classList.add("low-stock");
       tr.innerHTML=`<td>${produits[m].label}</td><td>${p} kg</td><td>${q}</td>`;
       tbody.appendChild(tr);
     }); });
@@ -120,5 +122,7 @@ function showSection(id){ document.querySelectorAll(".section").forEach(s=>s.sty
 
 // INIT
 window.onload=()=>{
-  loadMarques(); afficherStock(); afficherChiffre(); showSection("stock-section");
+  if(accessKey==="oryx229"){
+    loadMarques(); afficherStock(); afficherChiffre(); showSection("stock-section");
+  }
 };
