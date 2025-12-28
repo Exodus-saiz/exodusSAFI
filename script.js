@@ -25,12 +25,10 @@ setInterval(updateDateTime, 1000);
 /* =========================
    UTILITAIRES
 ========================= */
-function stockKey(marque, poids) {
-    return `stock_${marque}_${poids}`;
-}
-function archiveKey(date) {
-    return `archive_${date}`;
-}
+function stockKey(marque, poids) { return `stock_${marque}_${poids}`; }
+function archiveJourKey(date) { return `archive_${date}`; }
+function archiveMoisKey(anneeMois) { return `archive_month_${anneeMois}`; }
+function archiveAnneeKey(annee) { return `archive_year_${annee}`; }
 
 /* =========================
    CHARGEMENT DES MARQUES
@@ -85,8 +83,7 @@ function updatePoidsVente() {
 function updatePrix() {
     const marque = document.getElementById("vente-gaz-type").value;
     const poids = document.getElementById("vente-poids").value;
-    document.getElementById("prix-unitaire").value =
-        produits[marque].poids[poids];
+    document.getElementById("prix-unitaire").value = produits[marque].poids[poids];
     updateTotal();
 }
 
@@ -102,16 +99,20 @@ function updateTotal() {
 function ajouterStock() {
     const marque = document.getElementById("gaz-type").value;
     const poids = document.getElementById("gaz-poids").value;
-    const qte = parseInt(document.getElementById("initial-qty").value);
+    const ajout = parseInt(document.getElementById("initial-qty").value);
 
-    if (isNaN(qte) || qte < 0) {
+    if (isNaN(ajout) || ajout <= 0) {
         alert("Quantité invalide");
         return;
     }
 
-    localStorage.setItem(stockKey(marque, poids), qte);
+    const key = stockKey(marque, poids);
+    const stockActuel = parseInt(localStorage.getItem(key)) || 0;
+    const nouveauStock = stockActuel + ajout;
+
+    localStorage.setItem(key, nouveauStock);
     afficherStock();
-    alert("Stock mis à jour !");
+    alert(`Stock mis à jour ! Nouveau stock : ${nouveauStock}`);
 }
 
 function afficherStock() {
@@ -123,11 +124,7 @@ function afficherStock() {
             const q = parseInt(localStorage.getItem(stockKey(m, p))) || 0;
             const tr = document.createElement("tr");
             if (q < 5) tr.classList.add("low-stock");
-            tr.innerHTML = `
-                <td>${produits[m].label}</td>
-                <td>${p} kg</td>
-                <td>${q}</td>
-            `;
+            tr.innerHTML = `<td>${produits[m].label}</td><td>${p} kg</td><td>${q}</td>`;
             tbody.appendChild(tr);
         }
     }
@@ -141,78 +138,97 @@ function enregistrerVente() {
     const poids = document.getElementById("vente-poids").value;
     const qte = parseInt(document.getElementById("quantite").value);
 
-    if (isNaN(qte) || qte <= 0) {
-        alert("Quantité invalide");
-        return;
-    }
+    if (isNaN(qte) || qte <= 0) { alert("Quantité invalide"); return; }
 
     const key = stockKey(marque, poids);
-    let stock = parseInt(localStorage.getItem(key)) || 0;
+    const stock = parseInt(localStorage.getItem(key)) || 0;
 
-    if (qte > stock) {
-        alert("Stock insuffisant !");
-        return;
-    }
+    if (qte > stock) { alert("Stock insuffisant !"); return; }
 
     localStorage.setItem(key, stock - qte);
 
     const prix = produits[marque].poids[poids];
     const total = prix * qte;
 
+    // Chiffre global
     let chiffre = parseInt(localStorage.getItem("chiffre")) || 0;
     chiffre += total;
     localStorage.setItem("chiffre", chiffre);
 
+    // Archivage JOUR
     const date = new Date().toISOString().split("T")[0];
     const heure = new Date().toLocaleTimeString("fr-FR");
     const utilisateur = document.getElementById("vendeur").value;
+    let archiveJour = JSON.parse(localStorage.getItem(archiveJourKey(date))) || [];
+    archiveJour.push({ heure, utilisateur, marque: produits[marque].label, poids, qte, prix, total });
+    localStorage.setItem(archiveJourKey(date), JSON.stringify(archiveJour));
 
-    let archive = JSON.parse(localStorage.getItem(archiveKey(date))) || [];
-    archive.push({ heure, utilisateur, marque: produits[marque].label, poids, qte, prix, total });
-    localStorage.setItem(archiveKey(date), JSON.stringify(archive));
+    // Archivage MOIS
+    const anneeMois = date.slice(0,7); // "YYYY-MM"
+    let archiveMois = JSON.parse(localStorage.getItem(archiveMoisKey(anneeMois))) || { total:0, ventes:0 };
+    archiveMois.total += total;
+    archiveMois.ventes += qte;
+    localStorage.setItem(archiveMoisKey(anneeMois), JSON.stringify(archiveMois));
+
+    // Archivage ANNEE
+    const annee = date.slice(0,4); // "YYYY"
+    let archiveAnnee = JSON.parse(localStorage.getItem(archiveAnneeKey(annee))) || { total:0, ventes:0 };
+    archiveAnnee.total += total;
+    archiveAnnee.ventes += qte;
+    localStorage.setItem(archiveAnneeKey(annee), JSON.stringify(archiveAnnee));
 
     afficherStock();
     afficherChiffre();
     document.getElementById("quantite").value = "";
     document.getElementById("total").value = "";
-
     alert("Vente enregistrée !");
 }
 
+/* =========================
+   AFFICHAGE CHIFFRE
+========================= */
 function afficherChiffre() {
-    document.getElementById("chiffre-total").textContent =
-        (localStorage.getItem("chiffre") || 0) + " FCFA";
+    document.getElementById("chiffre-total").textContent = (localStorage.getItem("chiffre") || 0) + " FCFA";
 }
 
 /* =========================
-   ARCHIVES
+   AFFICHAGE ARCHIVES
 ========================= */
-function afficherArchiveJour() {
-    const date = document.getElementById("archive-date").value;
+function afficherArchive(type) {
     const tbody = document.getElementById("archive-table");
     tbody.innerHTML = "";
 
-    if (!date) return;
+    if (type === "jour") {
+        const date = document.getElementById("archive-date").value;
+        if (!date) return;
+        const archive = JSON.parse(localStorage.getItem(archiveJourKey(date))) || [];
+        let total = 0;
+        archive.forEach(v => {
+            total += v.total;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${v.heure}</td><td>${v.utilisateur}</td><td>${v.marque}</td><td>${v.poids} kg</td><td>${v.qte}</td><td>${v.prix}</td><td>${v.total}</td>`;
+            tbody.appendChild(tr);
+        });
+        document.getElementById("archive-total").textContent = total + " FCFA";
+    }
 
-    const archive = JSON.parse(localStorage.getItem(archiveKey(date))) || [];
-    let total = 0;
+    if (type === "mois") {
+        const date = document.getElementById("archive-date").value;
+        if (!date) return;
+        const anneeMois = date.slice(0,7);
+        const archive = JSON.parse(localStorage.getItem(archiveMoisKey(anneeMois))) || { total:0, ventes:0 };
+        tbody.innerHTML = `<tr><td colspan="6">Total ventes du mois</td><td>${archive.total} FCFA (${archive.ventes} bouteilles)</td></tr>`;
+        document.getElementById("archive-total").textContent = archive.total + " FCFA";
+    }
 
-    archive.forEach(v => {
-        total += v.total;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${v.heure}</td>
-            <td>${v.utilisateur}</td>
-            <td>${v.marque}</td>
-            <td>${v.poids} kg</td>
-            <td>${v.qte}</td>
-            <td>${v.prix}</td>
-            <td>${v.total}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    document.getElementById("archive-total").textContent = total + " FCFA";
+    if (type === "annee") {
+        const date = document.getElementById("archive-date").value;
+        if (!date) return;
+        const annee = date.slice(0,4);
+        const archive = JSON.parse(localStorage.getItem(archiveAnneeKey(annee))) || { total:0, ventes:0 };
+        tbody.innerHTML = `<tr><td colspan="6">Total ventes de l'année</td><td>${archive.total} FCFA (${archive.ventes} bouteilles)</td></tr>`;
+        document.getElementById("archive-total").textContent = archive.total + " FCFA";
+    }
 }
 
 /* =========================
@@ -220,10 +236,9 @@ function afficherArchiveJour() {
 ========================= */
 function reinitialiserVentes() {
     if (!confirm("Réinitialiser toutes les ventes ?")) return;
-    Object.keys(localStorage).forEach(k => {
-        if (k.startsWith("archive_")) localStorage.removeItem(k);
+    Object.keys(localStorage).forEach(k => { 
+        if (k.startsWith("archive_") || k === "chiffre") localStorage.removeItem(k);
     });
-    localStorage.setItem("chiffre", 0);
     afficherChiffre();
     document.getElementById("archive-table").innerHTML = "";
     document.getElementById("archive-total").textContent = "0 FCFA";
@@ -232,9 +247,7 @@ function reinitialiserVentes() {
 
 function reinitialiserStock() {
     if (!confirm("Réinitialiser tout le stock ?")) return;
-    Object.keys(localStorage).forEach(k => {
-        if (k.startsWith("stock_")) localStorage.removeItem(k);
-    });
+    Object.keys(localStorage).forEach(k => { if (k.startsWith("stock_")) localStorage.removeItem(k); });
     afficherStock();
     alert("Stock réinitialisé !");
 }
