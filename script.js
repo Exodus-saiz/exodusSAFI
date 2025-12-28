@@ -88,8 +88,8 @@ function updatePrix() {
 }
 
 function updateTotal() {
-    const prix = parseInt(document.getElementById("prix-unitaire").value) || 0;
-    const qte = parseInt(document.getElementById("quantite").value) || 0;
+    const prix = parseInt(document.getElementById("prix-unitaire").value, 10) || 0;
+    const qte = parseInt(document.getElementById("quantite").value, 10) || 0;
     document.getElementById("total").value = prix * qte;
 }
 
@@ -99,7 +99,7 @@ function updateTotal() {
 function ajouterStock() {
     const marque = document.getElementById("gaz-type").value;
     const poids = document.getElementById("gaz-poids").value;
-    const ajout = parseInt(document.getElementById("initial-qty").value);
+    let ajout = parseInt(document.getElementById("initial-qty").value, 10);
 
     if (isNaN(ajout) || ajout <= 0) { 
         alert("Quantité invalide"); 
@@ -107,11 +107,14 @@ function ajouterStock() {
     }
 
     const key = stockKey(marque, poids);
-    const stockActuel = parseInt(localStorage.getItem(key)) || 0;
-    const nouveauStock = stockActuel + ajout;
+    let stockActuel = parseInt(localStorage.getItem(key), 10);
+    if (isNaN(stockActuel)) stockActuel = 0;
 
+    const nouveauStock = stockActuel + ajout;
     localStorage.setItem(key, nouveauStock);
+
     afficherStock();
+    document.getElementById("initial-qty").value = ""; // vider input
     alert(`Stock mis à jour ! Nouveau stock : ${nouveauStock}`);
 }
 
@@ -120,7 +123,7 @@ function afficherStock() {
     tbody.innerHTML = "";
     for (let m in produits) {
         for (let p in produits[m].poids) {
-            const q = parseInt(localStorage.getItem(stockKey(m, p))) || 0;
+            const q = parseInt(localStorage.getItem(stockKey(m, p)), 10) || 0;
             const tr = document.createElement("tr");
             if (q < 5) tr.classList.add("low-stock");
             tr.innerHTML = `<td>${produits[m].label}</td><td>${p} kg</td><td>${q}</td>`;
@@ -135,12 +138,12 @@ function afficherStock() {
 function enregistrerVente() {
     const marque = document.getElementById("vente-gaz-type").value;
     const poids = document.getElementById("vente-poids").value;
-    const qte = parseInt(document.getElementById("quantite").value);
+    const qte = parseInt(document.getElementById("quantite").value, 10);
 
     if (isNaN(qte) || qte <= 0) { alert("Quantité invalide"); return; }
 
     const key = stockKey(marque, poids);
-    const stock = parseInt(localStorage.getItem(key)) || 0;
+    let stock = parseInt(localStorage.getItem(key), 10) || 0;
     if (qte > stock) { alert("Stock insuffisant !"); return; }
 
     localStorage.setItem(key, stock - qte);
@@ -149,7 +152,7 @@ function enregistrerVente() {
     const total = prix * qte;
 
     // Chiffre global
-    let chiffre = parseInt(localStorage.getItem("chiffre")) || 0;
+    let chiffre = parseInt(localStorage.getItem("chiffre"), 10) || 0;
     chiffre += total;
     localStorage.setItem("chiffre", chiffre);
 
@@ -278,4 +281,13 @@ function showSection(id) {
     document.getElementById(id).style.display = "block";
 }
 
-/* =========================    afficherChiffre();
+/* =========================
+   INIT
+========================= */
+window.onload = () => {
+    console.log("Page initialisée !");
+    loadMarques();
+    afficherStock();
+    afficherChiffre();
+    showSection("stock-section"); // section visible par défaut
+};/* =========================    afficherChiffre();
