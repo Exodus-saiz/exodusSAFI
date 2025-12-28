@@ -101,10 +101,7 @@ function ajouterStock() {
     const poids = document.getElementById("gaz-poids").value;
     const ajout = parseInt(document.getElementById("initial-qty").value);
 
-    if (isNaN(ajout) || ajout <= 0) {
-        alert("Quantité invalide");
-        return;
-    }
+    if (isNaN(ajout) || ajout <= 0) { alert("Quantité invalide"); return; }
 
     const key = stockKey(marque, poids);
     const stockActuel = parseInt(localStorage.getItem(key)) || 0;
@@ -164,14 +161,14 @@ function enregistrerVente() {
     localStorage.setItem(archiveJourKey(date), JSON.stringify(archiveJour));
 
     // Archivage MOIS
-    const anneeMois = date.slice(0,7); // "YYYY-MM"
+    const anneeMois = date.slice(0,7);
     let archiveMois = JSON.parse(localStorage.getItem(archiveMoisKey(anneeMois))) || { total:0, ventes:0 };
     archiveMois.total += total;
     archiveMois.ventes += qte;
     localStorage.setItem(archiveMoisKey(anneeMois), JSON.stringify(archiveMois));
 
     // Archivage ANNEE
-    const annee = date.slice(0,4); // "YYYY"
+    const annee = date.slice(0,4);
     let archiveAnnee = JSON.parse(localStorage.getItem(archiveAnneeKey(annee))) || { total:0, ventes:0 };
     archiveAnnee.total += total;
     archiveAnnee.ventes += qte;
@@ -181,6 +178,7 @@ function enregistrerVente() {
     afficherChiffre();
     document.getElementById("quantite").value = "";
     document.getElementById("total").value = "";
+    afficherArchive(currentArchiveType);
     alert("Vente enregistrée !");
 }
 
@@ -194,6 +192,15 @@ function afficherChiffre() {
 /* =========================
    AFFICHAGE ARCHIVES
 ========================= */
+let currentArchiveType = 'jour';
+
+function switchArchive(type) {
+    currentArchiveType = type;
+    document.querySelectorAll("#archive-tabs button").forEach(btn => btn.classList.remove("active"));
+    document.getElementById(`tab-${type}`).classList.add("active");
+    afficherArchive(currentArchiveType);
+}
+
 function afficherArchive(type) {
     const tbody = document.getElementById("archive-table");
     tbody.innerHTML = "";
@@ -278,5 +285,3 @@ window.onload = () => {
     loadMarques();
     afficherStock();
     afficherChiffre();
-    showSection("stock-section");
-};
