@@ -94,14 +94,17 @@ function updateTotal() {
 }
 
 /* =========================
-   STOCK
+   STOCK CUMULATIF
 ========================= */
 function ajouterStock() {
     const marque = document.getElementById("gaz-type").value;
     const poids = document.getElementById("gaz-poids").value;
     const ajout = parseInt(document.getElementById("initial-qty").value);
 
-    if (isNaN(ajout) || ajout <= 0) { alert("Quantité invalide"); return; }
+    if (isNaN(ajout) || ajout <= 0) { 
+        alert("Quantité invalide"); 
+        return; 
+    }
 
     const key = stockKey(marque, poids);
     const stockActuel = parseInt(localStorage.getItem(key)) || 0;
@@ -115,7 +118,6 @@ function ajouterStock() {
 function afficherStock() {
     const tbody = document.getElementById("stock-table");
     tbody.innerHTML = "";
-
     for (let m in produits) {
         for (let p in produits[m].poids) {
             const q = parseInt(localStorage.getItem(stockKey(m, p))) || 0;
@@ -139,7 +141,6 @@ function enregistrerVente() {
 
     const key = stockKey(marque, poids);
     const stock = parseInt(localStorage.getItem(key)) || 0;
-
     if (qte > stock) { alert("Stock insuffisant !"); return; }
 
     localStorage.setItem(key, stock - qte);
@@ -277,11 +278,4 @@ function showSection(id) {
     document.getElementById(id).style.display = "block";
 }
 
-/* =========================
-   INIT
-========================= */
-window.onload = () => {
-    console.log("Page initialisée !");
-    loadMarques();
-    afficherStock();
-    afficherChiffre();
+/* =========================    afficherChiffre();
