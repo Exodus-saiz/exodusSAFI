@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Safi & Fils</title>
-
-    <!-- Feuille de style (chemin relatif GitHub Pages) -->
     <link rel="stylesheet" href="./style.css">
+    <style>
+        /* Onglets Archives */
+        #archive-tabs { margin: 10px 0; }
+        #archive-tabs button { padding: 6px 12px; margin-right: 5px; cursor: pointer; }
+        #archive-tabs button.active { background-color: #4CAF50; color: white; }
+
+        /* Stock faible */
+        .low-stock { background-color: #fdd; }
+    </style>
 </head>
 <body>
 
@@ -79,7 +86,6 @@
     <!-- DASHBOARD -->
     <section id="dashboard-section" class="section" style="display:none;">
         <h2>Tableau de Bord</h2>
-
         <section>
             <h3>Stock actuel</h3>
             <table>
@@ -93,7 +99,6 @@
                 <tbody id="stock-table"></tbody>
             </table>
         </section>
-
         <section>
             <h3>Chiffre d'affaires total</h3>
             <p id="chiffre-total">0 FCFA</p>
@@ -106,7 +111,13 @@
 
         <div class="form-group">
             <label>Choisir la date</label>
-            <input type="date" id="archive-date" onchange="afficherArchiveJour()">
+            <input type="date" id="archive-date" onchange="afficherArchive(currentArchiveType)">
+        </div>
+
+        <div id="archive-tabs">
+            <button onclick="switchArchive('jour')" id="tab-jour" class="active">Journalier</button>
+            <button onclick="switchArchive('mois')" id="tab-mois">Mensuel</button>
+            <button onclick="switchArchive('annee')" id="tab-annee">Annuel</button>
         </div>
 
         <table>
@@ -123,8 +134,7 @@
             </thead>
             <tbody id="archive-table"></tbody>
         </table>
-
-        <p>Total du jour : <span id="archive-total">0 FCFA</span></p>
+        <p>Total : <span id="archive-total">0 FCFA</span></p>
     </section>
 
     <!-- PARAMÈTRES -->
@@ -141,8 +151,6 @@
     Site créé par Exodus Saïzonou
 </footer>
 
-<!-- Script JS chargé après le DOM -->
-<script src="./script.js" defer></script>
-
+<script src="./script.js"></script>
 </body>
 </html>
